@@ -1,5 +1,5 @@
 const { Router } = require("express");
-const { userModel } = require("../db");
+const { userModel, purchaseModel, courseModel } = require("../db");
 const jwt = require("jsonwebtoken");
 const { JWT_USER_PASSWORD }  = require("../config");
 
@@ -48,9 +48,20 @@ const userRouter = Router();
 
     })
 
-    userRouter.get("/purchases", function(req,res){
+    userRouter.get("/purchases", async function(req,res){
+        const userId = req.userId;
+
+        const purchases = await purchaseModel.find({
+            userId,
+        });
+
+        const coursesData =  await courseModel.find({
+            _id: { $in: purchases.map(x => x.courseId) }
+        })
+
         res.json({
-            message: "signup endpoint"
+            purchases,
+            coursesData
         })
     })
 
